@@ -17,6 +17,16 @@ function doGet() {
 }
 
 function doPost(e) {
+  const type = e.parameter.type;
+  const value = e.parameter.value;
+  if (type === "delete") {
+    deleteRow(value);
+  }
+  if (type === "edit") {
+    const arr = value.split(":");
+    replaceRow(arr);
+  }
+
   let jsonResponse;
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ws = ss.getSheetByName("customer");
@@ -42,6 +52,28 @@ function doPost(e) {
   arrayOfData.unshift(newIdNumber);
 
   ws.appendRow(arrayOfData);
+}
+
+function replaceRow(value) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const editSheet = ss.getSheetByName("Sheet1");
+  const lastRowEdit = editSheet.getLastRow();
+  for (let i = 2; i <= lastRowEdit; i++) {
+    if (editSheet.getRange(i, 1).getValue() === value[0]) {
+      editSheet.getRange("A" + i + ":C" + i).setValues([value]);
+    }
+  }
+}
+
+function deleteRow(value) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const editSheet = ss.getSheetByName("Sheet1");
+  const lastRowEdit = editSheet.getLastRow();
+  for (let i = 2; i <= lastRowEdit; i++) {
+    if (editSheet.getRange(i, 1).getValue() === value) {
+      editSheet.deleteRow(i);
+    }
+  }
 }
 
 function compareTwoArray_(arr1, arr2) {
