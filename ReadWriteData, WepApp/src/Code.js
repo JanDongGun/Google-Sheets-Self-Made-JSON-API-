@@ -31,6 +31,7 @@ function doPost(e) {
   const requiredColumns = ["firstName", "lastName"];
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ws = ss.getSheetByName("customer");
+  const data = ws.getRange(2, 1, ws.getLastRow(), ws.getLastColumn());
   const headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
   const headersOriginalOrder = headers.slice();
   headersOriginalOrder.shift();
@@ -48,10 +49,11 @@ function doPost(e) {
   }
 
   const arrayOfData = headersOriginalOrder.map((h) => bodyJSON[h]);
-  const aoaIDs = ws.getRange(2, 1, ws.getLastRow() - 1, 1).getValues();
+  const aoaIDs = ws.getRange(2, 1, ws.getLastRow(), 1).getValues();
   const newIdNumber = getMaxFromArrayOfArray_(aoaIDs) + 1;
   arrayOfData.unshift(newIdNumber);
   ws.appendRow(arrayOfData);
+  data.sort(2);
   bodyJSON.id = newIdNumber;
   return sendJSON_(bodyJSON);
 }
@@ -107,10 +109,12 @@ function sendJSON_(response) {
 
 function getMaxFromArrayOfArray_(aoa) {
   let maxID = 0;
-  aoa.forEach((r) => {
-    if (r[0] > maxID) {
-      maxID = r[0];
-    }
-  });
+  if (aoa) {
+    aoa.forEach((r) => {
+      if (r[0] > maxID) {
+        maxID = r[0];
+      }
+    });
+  }
   return maxID;
 }
