@@ -28,6 +28,7 @@ function doPost(e) {
   }
 
   let jsonResponse;
+  const requiredColumns = ["firstName", "lastName"];
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ws = ss.getSheetByName("customer");
   const headers = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
@@ -41,7 +42,7 @@ function doPost(e) {
   const bodyJSON = JSON.parse(body);
   const headersPassed = Object.keys(bodyJSON).sort();
 
-  if (!compareTwoArray_(headers, headersPassed)) {
+  if (!checkColumnsPassed_(headers, headersPassed, requiredColumns)) {
     jsonResponse = { status: 500, message: "Invalid Arguments Passed" };
     return sendJSON_(jsonResponse);
   }
@@ -50,8 +51,9 @@ function doPost(e) {
   const aoaIDs = ws.getRange(2, 1, ws.getLastRow() - 1, 1).getValues();
   const newIdNumber = getMaxFromArrayOfArray_(aoaIDs) + 1;
   arrayOfData.unshift(newIdNumber);
-
   ws.appendRow(arrayOfData);
+  bodyJSON.id = newIdNumber;
+  return sendJSON_(bodyJSON);
 }
 
 function replaceRow(value) {
@@ -76,12 +78,24 @@ function deleteRow(value) {
   }
 }
 
-function compareTwoArray_(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-  for (let index = 0; index < arr1.length; index++) {
-    if (arr1[index] !== arr2[index]) return false;
-  }
+// function compareTwoArray_(arr1, arr2) {
+//   if (arr1.length !== arr2.length) return false;
+//   for (let index = 0; index < arr1.length; index++) {
+//     if (arr1[index] !== arr2[index]) return false;
+//   }
 
+//   return true;
+// }
+
+function checkColumnsPassed_(
+  arrAllColumns,
+  arrColumnsPassed,
+  arrRequiredColumns
+) {
+  if (!arrRequiredColumns.every((item) => arrColumnsPassed.includes(item)))
+    return false;
+  if (!arrColumnsPassed.every((item) => arrAllColumns.includes(item)))
+    return false;
   return true;
 }
 
